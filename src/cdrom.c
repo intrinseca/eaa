@@ -65,7 +65,31 @@ int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count)
 			/* an error occured */
 				g_print("error: ");
 				perror("");
+				return -1;
 		}
 		count--;
 	}
+
+	return 0;
+}
+
+int cdrom_seek(cdrom_t *cd, uint32_t sector)
+{
+	int ret;
+	g_print("seeking to sector %d\n", sector);
+
+	ret = cdrom_read(cd, sector, 1);
+
+	return ret;
+}
+
+int cdrom_clear_cache(cdrom_t *cd)
+{
+	int ret;
+
+	g_print("clearing cache\n");
+
+	ret = cdrom_seek(cd, CDROM_NUM_SECTORS - 1);
+
+	return ret;
 }

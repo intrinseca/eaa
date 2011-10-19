@@ -22,5 +22,7 @@ typedef struct {
 int cdrom_init(cdrom_t *cd);
 int cdrom_open(cdrom_t *cd, char *path);
 int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count);
+int cdrom_seek(cdrom_t *cd, uint32_t sector);
+int cdrom_clear_cache(cdrom_t *cd);
 
 #endif /* CDROM_H_ */
