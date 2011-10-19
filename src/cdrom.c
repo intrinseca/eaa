@@ -54,7 +54,7 @@ int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count)
 
 	byte_offset = sector * CDROM_SECTOR_SIZE;
 
-	g_print("reading %d sectors from offet %d\n", count, sector);
+	g_print("reading %d sectors from offset %d\n", count, sector);
 
 	lseek(cd->fd, byte_offset, SEEK_SET);
 
