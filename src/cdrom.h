@@ -16,7 +16,7 @@
 typedef struct {
 	int fd;
 	uint32_t curr_sector;
-	uint32_t *scratch_buf;
+	void *scratch_buf;
 } cdrom_t;
 
 int cdrom_init(cdrom_t *cd);

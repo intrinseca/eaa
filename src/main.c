@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
 	cdrom_open(&cd, "/dev/sr0");
 
-	cdrom_read(&cd, 0, 100);
+	cdrom_read(&cd, 0, 10000);
 
 	cdrom_close(&cd);
 

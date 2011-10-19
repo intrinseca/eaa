@@ -21,11 +21,7 @@ int cdrom_init(cdrom_t *cd)
 	cd->curr_sector = 0;
 	cd->fd = -1;
 
-	posix_memalign((void*)&(cd->scratch_buf), 512, CDROM_SECTOR_SIZE);
-
-	if (cd->scratch_buf & 511 != 0) {
-		g_printerr("failed to acquire aligned memory\n");
-	}
+	posix_memalign(&(cd->scratch_buf), CDROM_SECTOR_SIZE, CDROM_SECTOR_SIZE);
 
 	return 0;
 }
