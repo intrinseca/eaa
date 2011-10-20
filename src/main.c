@@ -6,7 +6,7 @@
 #include "cdrom.h"
 #include "stopwatch.h"
 
-#define RANDOM_ACCESS_REPS	10
+#define RANDOM_ACCESS_MAX_REPS	500
 #define RANDOM_ACCESS_READ_LENGTH	1
 
 cdrom_t cd;
@@ -47,7 +47,7 @@ void speedTest()
 	}
 }
 
-void randomAccessTest(void *ptr)
+void randomAccessTest(int reps)
 {
 	int i;
 
@@ -57,8 +57,8 @@ void randomAccessTest(void *ptr)
 	double timeTaken;
 	double speed;
 
-	int starts[RANDOM_ACCESS_REPS];
-	double times[RANDOM_ACCESS_REPS];
+	int starts[RANDOM_ACCESS_MAX_REPS];
+	double times[RANDOM_ACCESS_MAX_REPS];
 	double mean;
 
 	g_print("Spinning up Drive...\n");
@@ -66,11 +66,11 @@ void randomAccessTest(void *ptr)
 	cdrom_read(&cd, 0, 1000);
 	cdrom_clear_cache(&cd);
 
-	g_print("Beginning test...\n");
+	g_print("Beginning test (%d repetitions)\n", reps);
 
 	cdrom_seek(&cd, 0);
 
-	for( i = 0; i < RANDOM_ACCESS_REPS; i++)
+	for(i = 0; i < reps; i++)
 	{
 		start = g_random_int_range(0, CDROM_NUM_SECTORS - RANDOM_ACCESS_READ_LENGTH);
 
@@ -90,18 +90,20 @@ void randomAccessTest(void *ptr)
 	}
 
 
-	for( i = 0; i < RANDOM_ACCESS_REPS; i++)
+	for( i = 0; i < reps; i++)
 	{
 		fprintf(output, "%d,%f\n", starts[i], times[i]);
 		mean += starts[i] / times[i];
 	}
 
-	mean /= RANDOM_ACCESS_REPS;
+	mean /= reps;
 	g_print("mean speed: %f\n", mean);
 }
 
 int main(int argc, char *argv[])
 {
+	int randomReps = RANDOM_ACCESS_MAX_REPS;
+
 	srand(time(NULL));
 
 	output = fopen("results.csv", "w");
@@ -109,8 +111,27 @@ int main(int argc, char *argv[])
 
 	cdrom_open(&cd, "/dev/sr0");
 
-	speedTest(NULL);
-	randomAccessTest(NULL);
+	if(strcmp(argv[1], "speed") == 0)
+	{
+		speedTest(NULL);
+	}
+	else if(strcmp(argv[1], "random") == 0)
+	{
+		randomReps = atoi(argv[2]);
+
+		if(randomReps < RANDOM_ACCESS_MAX_REPS)
+		{
+			randomAccessTest(randomReps);
+		}
+		else
+		{
+			g_print("Too Many Reps\n");
+		}
+	}
+	else
+	{
+		g_print("Usage: eaa (speed|random count)\n");
+	}
 
 	fclose(output);
 	cdrom_close(&cd);
