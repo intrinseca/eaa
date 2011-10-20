@@ -6,41 +6,52 @@
 #include "cdrom.h"
 #include "stopwatch.h"
 
-#define RANDOM_ACCESS_REPS	200
+#define RANDOM_ACCESS_REPS	10
 #define RANDOM_ACCESS_READ_LENGTH	1
 
 cdrom_t cd;
 FILE *output;
 
-void randomAccessRead(void *ptr)
+struct timedReadParams
 {
-	int *start = ptr;
+	int sector;
+	int count;
+};
 
-	g_print("\treading %d sectors from offset %d\n", RANDOM_ACCESS_READ_LENGTH, *start);
-	cdrom_read(&cd, *start, RANDOM_ACCESS_READ_LENGTH);
-	cdrom_clear_cache(&cd);
+void timedRead(void *ptr)
+{
+	struct timedReadParams *params = ptr;
+
+	g_print("\treading %d sectors from offset sector %d\n", (*params).count, (*params).sector);
+	
+	cdrom_read(&cd, (*params).sector, (*params).count);
 }
 
 void speedTest()
 {
-	int start = 0;
 	int i;
 
-	for(i = 1; i < 52; i++)
+	struct timedReadParams params;
+
+	for(i = 1; i <= 52; i *= 2)
 	{
 		g_print("Spinning up Drive to %dx...\n", i);
 		cdrom_set_speed(&cd, i);
 		cdrom_read(&cd, 0, 1000);
 		cdrom_clear_cache(&cd);
 
-		g_print("\t time: %f\n", stopwatch(randomAccessRead, &start));
+		params.sector = 0;
+		params.count = 1000;
+
+		g_print("\ttime: %f\n", stopwatch(timedRead, &params));
 	}
 }
 
 void randomAccessTest(void *ptr)
 {
 	int i;
-	float nextRand;
+
+	struct timedReadParams params;
 
 	int start;
 	double timeTaken;
@@ -61,13 +72,12 @@ void randomAccessTest(void *ptr)
 
 	for( i = 0; i < RANDOM_ACCESS_REPS; i++)
 	{
-		//nextRand = (float)rand() / RAND_MAX;
-		//start = nextRand * (CDROM_NUM_SECTORS - RANDOM_ACCESS_READ_LENGTH);
 		start = g_random_int_range(0, CDROM_NUM_SECTORS - RANDOM_ACCESS_READ_LENGTH);
 
-		starts[i] = start;
+		params.sector = start;
+		params.count = RANDOM_ACCESS_READ_LENGTH;
 
-		timeTaken = stopwatch(randomAccessRead, &start);
+		timeTaken = stopwatch(timedRead, &params);
 		speed = start / timeTaken;
 
 		g_print("\ttest %d:\n", i + 1);
@@ -75,6 +85,7 @@ void randomAccessTest(void *ptr)
 		g_print("\t\ttime: %f\n", timeTaken);
 		g_print("\t\tspeed: %f\n", speed);
 
+		starts[i] = start;
 		times[i] = timeTaken;
 	}
 
@@ -98,7 +109,8 @@ int main(int argc, char *argv[])
 
 	cdrom_open(&cd, "/dev/sr0");
 
-	g_print("total time taken: %fs\n", stopwatch(speedTest, NULL));
+	speedTest(NULL);
+	randomAccessTest(NULL);
 
 	fclose(output);
 	cdrom_close(&cd);
