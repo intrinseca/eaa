@@ -54,7 +54,7 @@ int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count)
 
 	byte_offset = sector * CDROM_SECTOR_SIZE;
 
-	g_print("reading %d sectors from offset %d\n", count, sector);
+	//g_print("reading %d sectors from offset %d\n", count, sector);
 
 	lseek(cd->fd, byte_offset, SEEK_SET);
 
@@ -76,7 +76,7 @@ int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count)
 int cdrom_seek(cdrom_t *cd, uint32_t sector)
 {
 	int ret;
-	g_print("seeking to sector %d\n", sector);
+	//g_print("seeking to sector %d\n", sector);
 
 	ret = cdrom_read(cd, sector, 1);
 
@@ -87,7 +87,7 @@ int cdrom_clear_cache(cdrom_t *cd)
 {
 	int ret;
 
-	g_print("clearing cache\n");
+	//g_print("clearing cache\n");
 
 	ret = cdrom_seek(cd, CDROM_NUM_SECTORS - 1);
 
