@@ -11,4 +11,4 @@ include_directories(${GLIB_INCLUDE_DIRS})
 add_definitions(-D_GNU_SOURCE)
 
 add_executable(eaa main.c cdrom.c stopwatch.c)
-target_link_libraries(eaa ${GLIB_LIBRARIES})
+target_link_libraries(eaa m ${GLIB_LIBRARIES})

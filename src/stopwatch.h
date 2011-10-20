@@ -11,6 +11,6 @@
 #include <stdint.h>
 
 double stopwatch(void (*ptr)(void *args), void *args);
-double stopwatch_repeat(uint32_t count, double *variance, void (*ptr)(void *args), void *args);
+double stopwatch_repeat(uint32_t count, double *deviation, void (*ptr)(void *args), void *args);
 
 #endif /* STOPWATCH_H_ */

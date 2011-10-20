@@ -24,5 +24,6 @@ int cdrom_open(cdrom_t *cd, char *path);
 int cdrom_read(cdrom_t *cd, uint32_t sector, uint32_t count);
 int cdrom_seek(cdrom_t *cd, uint32_t sector);
 int cdrom_clear_cache(cdrom_t *cd);
+int cdrom_set_speed(cdrom_t *cd, uint8_t speed);
 
 #endif /* CDROM_H_ */

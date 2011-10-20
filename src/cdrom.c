@@ -31,7 +31,7 @@ int cdrom_open(cdrom_t *cd, char *path)
 	cd->fd = open(path, O_RDONLY | O_DIRECT);
 
 	if(cd->fd == -1) {
-		g_printerr("failed to open %s\n", path);
+		g_error("failed to open %s\n", path);
 		return -1;
 	}
 
@@ -92,4 +92,15 @@ int cdrom_clear_cache(cdrom_t *cd)
 	ret = cdrom_seek(cd, CDROM_NUM_SECTORS - 1);
 
 	return ret;
+}
+
+int cdrom_set_speed(cdrom_t *cd, uint8_t speed)
+{
+	char cmd[32];
+
+	snprintf(cmd, 31, "eject -x %d", speed);
+
+	system(cmd);
+
+	return 0;
 }
