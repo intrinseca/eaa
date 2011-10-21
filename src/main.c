@@ -8,7 +8,7 @@
 
 #define RANDOM_ACCESS_MAX_REPS	500
 #define RANDOM_ACCESS_READ_LENGTH	1
-#define SEEK_RES 500
+#define SEEK_RES 3000
 
 cdrom_t cd;
 FILE *output;
@@ -117,20 +117,24 @@ void seekTest()
 	int starts[CDROM_NUM_SECTORS / SEEK_RES];
 	double times[CDROM_NUM_SECTORS / SEEK_RES];
 
+	cdrom_set_speed(&cd, 0);
 	spinUp();
 
 	g_print("Beginning Test...\n");
 
-	for(i = 0; i < CDROM_NUM_SECTORS / SEEK_RES; i ++)
+	for(i = 1; i < CDROM_NUM_SECTORS / SEEK_RES; i ++)
 	{
 		params.sector = i * SEEK_RES;
 		params.count = 10;
+
+		cdrom_clear_cache(&cd);
+		cdrom_seek(&cd, 0);
 
 		timeTaken = stopwatch(timedRead, &params);
 
 		g_print(".");
 
-		starts[i] = i;
+		starts[i] = i * SEEK_RES;
 		times[i] = timeTaken;
 	}
 
@@ -138,7 +142,7 @@ void seekTest()
 
 	for( i = 0; i < CDROM_NUM_SECTORS / SEEK_RES; i++)
 	{
-		fprintf(output, "%d,%f\n", starts[i] * SEEK_RES, times[i]);
+		fprintf(output, "%d,%f\n", starts[i], times[i]);
 	}
 }
 
