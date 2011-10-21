@@ -22,7 +22,7 @@ void timedRead(void *ptr)
 {
 	struct timedReadParams *params = ptr;
 
-	g_print("\treading %d sectors from offset sector %d\n", (*params).count, (*params).sector);
+	//g_print("\treading %d sectors from offset sector %d\n", (*params).count, (*params).sector);
 	
 	cdrom_read(&cd, (*params).sector, (*params).count);
 }
@@ -47,7 +47,7 @@ void speedTest()
 	}
 }
 
-void randomAccessTest(int reps)
+void randomAccessTest(int reps, int verbose)
 {
 	int i;
 
@@ -80,15 +80,26 @@ void randomAccessTest(int reps)
 		timeTaken = stopwatch(timedRead, &params);
 		speed = start / timeTaken;
 
-		g_print("\ttest %d:\n", i + 1);
-		g_print("\t\tstart: %d\n", start);
-		g_print("\t\ttime: %f\n", timeTaken);
-		g_print("\t\tspeed: %f\n", speed);
+		if(verbose)
+		{
+			g_print("\ttest %d:\n", i + 1);
+			g_print("\t\tstart: %d\n", start);
+			g_print("\t\ttime: %f\n", timeTaken);
+			g_print("\t\tspeed: %f\n", speed);
+		}
+		else
+		{
+			g_print(".");
+		}
 
 		starts[i] = start;
 		times[i] = timeTaken;
 	}
 
+	if(!verbose)
+	{
+		g_print("\n");
+	}
 
 	for( i = 0; i < reps; i++)
 	{
@@ -119,9 +130,16 @@ int main(int argc, char *argv[])
 	{
 		randomReps = atoi(argv[2]);
 
-		if(randomReps < RANDOM_ACCESS_MAX_REPS)
+		if(randomReps <= RANDOM_ACCESS_MAX_REPS)
 		{
-			randomAccessTest(randomReps);
+			if(randomReps > 20)
+			{
+				randomAccessTest(randomReps, FALSE);				
+			}
+			else
+			{
+				randomAccessTest(randomReps, TRUE);						
+			}
 		}
 		else
 		{
