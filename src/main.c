@@ -23,8 +23,16 @@ void timedRead(void *ptr)
 	struct timedReadParams *params = ptr;
 
 	//g_print("\treading %d sectors from offset sector %d\n", (*params).count, (*params).sector);
-	
+
 	cdrom_read(&cd, (*params).sector, (*params).count);
+}
+
+void spinUp()
+{
+	g_print("Spinning up Drive...\n");
+	cdrom_set_speed(&cd, 1);
+	cdrom_read(&cd, 0, 1000);
+	cdrom_clear_cache(&cd);
 }
 
 void speedTest()
@@ -55,20 +63,13 @@ void randomAccessTest(int reps, int verbose)
 
 	int start;
 	double timeTaken;
-	double speed;
 
 	int starts[RANDOM_ACCESS_MAX_REPS];
 	double times[RANDOM_ACCESS_MAX_REPS];
-	double mean;
 
-	g_print("Spinning up Drive...\n");
-	cdrom_set_speed(&cd, 52);
-	cdrom_read(&cd, 0, 1000);
-	cdrom_clear_cache(&cd);
+	spinUp();
 
 	g_print("Beginning test (%d repetitions)\n", reps);
-
-	cdrom_seek(&cd, 0);
 
 	for(i = 0; i < reps; i++)
 	{
@@ -78,14 +79,12 @@ void randomAccessTest(int reps, int verbose)
 		params.count = RANDOM_ACCESS_READ_LENGTH;
 
 		timeTaken = stopwatch(timedRead, &params);
-		speed = start / timeTaken;
 
 		if(verbose)
 		{
 			g_print("\ttest %d:\n", i + 1);
 			g_print("\t\tstart: %d\n", start);
 			g_print("\t\ttime: %f\n", timeTaken);
-			g_print("\t\tspeed: %f\n", speed);
 		}
 		else
 		{
@@ -104,11 +103,42 @@ void randomAccessTest(int reps, int verbose)
 	for( i = 0; i < reps; i++)
 	{
 		fprintf(output, "%d,%f\n", starts[i], times[i]);
-		mean += starts[i] / times[i];
+	}
+}
+
+void seekTest()
+{
+	int i;
+	struct timedReadParams params;
+
+	double timeTaken;
+
+	int starts[CDROM_NUM_SECTORS / 1000];
+	double times[CDROM_NUM_SECTORS / 1000];
+
+	spinUp();
+
+	g_print("Beginning Test...\n");
+
+	for(i = 0; i < CDROM_NUM_SECTORS / 1000; i ++)
+	{
+		params.sector = i * 1000;
+		params.count = 10;
+
+		timeTaken = stopwatch(timedRead, &params);
+
+		g_print(".");
+
+		starts[i] = i;
+		times[i] = timeTaken;
 	}
 
-	mean /= reps;
-	g_print("mean speed: %f\n", mean);
+	g_print("\n");
+
+	for( i = 0; i < CDROM_NUM_SECTORS / 1000; i++)
+	{
+		fprintf(output, "%d,%f\n", starts[i] * 1000, times[i]);
+	}
 }
 
 int main(int argc, char *argv[])
@@ -145,6 +175,10 @@ int main(int argc, char *argv[])
 		{
 			g_print("Too Many Reps\n");
 		}
+	}
+	else if(strcmp(argv[1], "seek") == 0)
+	{
+		seekTest();
 	}
 	else
 	{
